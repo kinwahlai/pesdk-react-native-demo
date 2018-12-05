@@ -3,6 +3,7 @@ package com.pesdk;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 
 import com.facebook.react.bridge.ActivityEventListener;
@@ -12,6 +13,8 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableMap;
+
+import java.io.File;
 
 import ly.img.android.pesdk.assets.filter.basic.FilterPackBasic;
 import ly.img.android.pesdk.assets.font.basic.FontPackBasic;
@@ -56,14 +59,13 @@ public class PESDKModule extends ReactContextBaseJavaModule {
         if (getCurrentActivity() != null) {
             SettingsList settingsList = createPesdkSettingsList();
             settingsList.getSettingsModel(EditorLoadSettings.class)
-                .setImageSourcePath(image, true) // Load with delete protection true!
+                    .setImageSource(Uri.fromFile(new File(image)),true)
 
                 .getSettingsModel(EditorSaveSettings.class)
-                .setExportDir(Directory.DCIM, "test")
-                .setExportPrefix("result_")
-                .setSavePolicy(
-                        EditorSaveSettings.SavePolicy.KEEP_SOURCE_AND_CREATE_ALWAYS_OUTPUT
-                );
+                .setExportDir(mReactContext.getCacheDir().getAbsolutePath())
+//                .setExportDir(Directory.DCIM, "test")
+                .setExportPrefix("result999_")
+                .setSavePolicy(EditorSaveSettings.SavePolicy.RETURN_ALWAYS_ONLY_OUTPUT);
 
             new PhotoEditorBuilder(getCurrentActivity())
                     .setSettingsList(settingsList)
@@ -103,13 +105,16 @@ public class PESDKModule extends ReactContextBaseJavaModule {
 
         // Set custom camera image export settings
         settingsList.getSettingsModel(CameraSettings.class)
-                .setExportDir(Directory.DCIM, "PESDKPlugin")
+                .setExportDir(mReactContext.getCacheDir().getAbsolutePath())
+//                .setExportDir(Directory.DCIM, "PESDKPlugin")
                 .setExportPrefix("camera_");
+
 
         // Set custom editor image export settings
         settingsList.getSettingsModel(EditorSaveSettings.class)
-                .setExportDir(Directory.DCIM, "PESDKPlugin")
-                .setExportPrefix("result_")
+                .setExportDir(mReactContext.getCacheDir().getAbsolutePath())
+//                .setExportDir(Directory.DCIM, "PESDKPlugin")
+                .setExportPrefix("result555_")
                 .setSavePolicy(EditorSaveSettings.SavePolicy.RETURN_ALWAYS_ONLY_OUTPUT);
 
         return settingsList;
@@ -129,9 +134,12 @@ public class PESDKModule extends ReactContextBaseJavaModule {
                             // mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("PhotoEditorDidCancel", null);
                             break;
                         case Activity.RESULT_OK:
+                            Uri resultUri = data.getParcelableExtra(ImgLyIntent.RESULT_IMAGE_URI);
+                            Uri sourceUri = data.getParcelableExtra(ImgLyIntent.SOURCE_IMAGE_URI);
+
                             String resultPath = data.getStringExtra(ImgLyIntent.RESULT_IMAGE_PATH);
-                            WritableMap payload = Arguments.createMap();
-                            payload.putString("path", resultPath);
+//                            WritableMap payload = Arguments.createMap();
+//                            payload.putString("path", resultPath);
                             // mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit("PhotoEditorDidSave", payload);
                             break;
                     }
